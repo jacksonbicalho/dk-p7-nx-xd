@@ -1,0 +1,55 @@
+version: '3.1'
+
+services:
+  ngix:
+    build:
+      context: ./nginx
+      args:
+        NGINX_SERVER_NAME: ${NGINX_SERVER_NAME}
+        NGINX_DOCUMENT_ROOT: ${NGINX_DOCUMENT_ROOT}
+        PHPFPM_IP: ${PHPFPM_IP}
+    container_name: ${PREFIX_CONTAINER}_nginx
+    volumes:
+      - ./www/html:${WORK_DIR}
+      - ./logs/ngix:/var/log/nginx
+    tty: true
+    networks:
+      rede:
+        ipv4_address: 10.2.1.3
+
+  php:
+    container_name: ${PREFIX_CONTAINER}_php
+    build:
+      context: ./php
+      args:
+        USER_ID: ${USER_ID}
+        WORK_DIR: ${NGINX_DOCUMENT_ROOT}
+    volumes:
+      - ./www/html:${WORK_DIR}
+      - ./logs/php-fpm:/var/log/php-fpm/
+    expose:
+    - "9000"
+    networks:
+      rede:
+        ipv4_address: 10.2.1.2
+
+  postgres:
+    container_name: ${PREFIX_CONTAINER}_postgres
+    restart: always
+    build:
+      context: ./db
+    volumes:
+      - ./db/postgresql/:/var/lib/postgresql/
+      - ./db/dumps/:/var/dumps/
+    expose:
+      - "5432"
+    networks:
+      rede:
+        ipv4_address: 10.2.1.1
+
+networks:
+  rede:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.2.1.0/16

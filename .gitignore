@@ -1,0 +1,10 @@
+.env
+logs/*
+db/dumps/*
+db/mysql
+db/postgresql/*
+
+www/html/*
+
+!.keep
+
